@@ -291,7 +291,7 @@ svg { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColo
 .card-title { margin: 10px 0 6px; font-size: 1.28rem; line-height: 1.25; letter-spacing: -0.015em; font-weight: 800; }
 
 .event-info {
-  display: flex; align-items: center; gap: 8px; margin: 4px 0 10px;
+  display: flex; align-items: flex-start; gap: 8px; margin: 4px 0 10px;
   color: var(--primary-strong); font-weight: 700; font-size: 0.93rem;
 }
 
@@ -349,7 +349,10 @@ svg { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColo
 .list-heading[hidden] { display: none; }
 .list-heading-past { margin-top: 40px; }
 
-.event-list { display: grid; gap: 16px; }
+.event-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.event-info svg { margin-top: 0.2em; }
+.nowrap { white-space: nowrap; }
+.hero-title, .app-promo h2, .card-title { text-wrap: balance; }
 .list-empty {
   margin: 0; padding: 22px; border-radius: var(--radius); border: 1.5px dashed var(--outline);
   color: var(--text-secondary); text-align: center; background: var(--surface-soft);
@@ -404,10 +407,11 @@ svg { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColo
 
 /* --------------------------------------------------------- app promo */
 
-.app-promo { padding: 0 0 64px; }
+.app-promo { padding: 0 20px 64px; }
 .app-promo-inner {
   position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: space-between; gap: 30px;
+  width: auto; margin: 0 auto;
   border-radius: 32px; padding: 44px 48px;
   background:
     radial-gradient(circle at 92% 20%, rgba(157, 211, 245, 0.35), transparent 40%),
@@ -483,15 +487,24 @@ svg { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColo
   .search { flex: none; max-width: none; }
   .filter-row { flex-direction: column; gap: 6px; }
   .filter-label { width: auto; padding-top: 0; }
-  .chips { flex-wrap: nowrap; overflow-x: auto; width: 100%; padding-bottom: 4px; scrollbar-width: none; }
-  .chips::-webkit-scrollbar { display: none; }
-  .chip { flex: none; }
   .card { padding: 18px 16px 10px; gap: 12px; }
   .card::before { left: 16px; right: 16px; }
-  .date-block { width: 58px; padding: 8px 0 10px; }
-  .date-day { font-size: 1.6rem; }
   .icon-btn-label { display: none; }
-  .app-promo-inner { flex-direction: column; align-items: flex-start; padding: 32px 24px; border-radius: 26px; }
+  .app-promo-inner { flex-direction: column; align-items: flex-start; padding: 30px 22px; border-radius: 26px; }
+  .app-promo { padding-left: 16px; padding-right: 16px; }
+  .container { padding-left: 16px; padding-right: 16px; }
+  .eyebrow { font-size: 0.72rem; letter-spacing: 0.1em; gap: 8px; margin-bottom: 14px; }
+  .hero-glow { width: 440px; height: 440px; inset: -150px -170px auto auto; }
+  .hero-lead { font-size: 1.05rem; margin-top: 16px; }
+  .chips { flex-wrap: wrap; overflow: visible; }
+  .card-event { flex-direction: column; gap: 10px; }
+  .card-event .date-block {
+    flex-direction: row; align-items: baseline; gap: 6px; width: auto; padding: 5px 12px;
+    border-radius: 10px;
+  }
+  .card-event .date-day { font-size: 1.05rem; letter-spacing: 0; }
+  .card-event .date-weekday, .card-event .date-month { font-size: 0.72rem; }
+  .card-title { font-size: 1.18rem; }
   .app-promo-mark { display: none; }
   .footer-inner { grid-template-columns: 1fr; }
   .footer-links { justify-content: flex-start; }

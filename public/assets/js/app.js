@@ -121,14 +121,15 @@
     var time = { hour: '2-digit', minute: '2-digit' };
     var clock = t('clock') ? ' ' + t('clock') : '';
 
+    // Returns parts that must not be broken internally (rendered as nowrap spans)
     if (post.eventAllDay) {
-      if (sameDay) return fmt(start, dateLong) + ' · ' + t('allDay');
-      return fmt(start, dateShort) + ' – ' + fmt(end, dateLong) + ' · ' + t('allDay');
+      if (sameDay) return [fmt(start, dateLong), t('allDay')];
+      return [fmt(start, dateShort) + ' –', fmt(end, dateLong), t('allDay')];
     }
     if (sameDay) {
-      return fmt(start, dateLong) + ' · ' + fmt(start, time) + (end ? '–' + fmt(end, time) : '') + clock;
+      return [fmt(start, dateLong), fmt(start, time) + (end ? '–' + fmt(end, time) : '') + clock];
     }
-    return fmt(start, dateShort) + ', ' + fmt(start, time) + ' – ' + fmt(end, dateShort) + ', ' + fmt(end, time) + clock;
+    return [fmt(start, dateShort) + ', ' + fmt(start, time) + ' –', fmt(end, dateShort) + ', ' + fmt(end, time) + clock];
   }
 
   function eventEndTime(post) {
@@ -335,7 +336,16 @@
       })() : null
     ]);
 
-    var eventInfo = isEvent ? h('p', { class: 'event-info' }, [svgIcon(ICON.calendar), h('span', { text: eventRange(post) })]) : null;
+    var eventInfo = null;
+    if (isEvent) {
+      var parts = eventRange(post);
+      var label = h('span', { class: 'event-when' });
+      parts.forEach(function (part, i) {
+        if (i) label.appendChild(document.createTextNode(/–$/.test(parts[i - 1]) ? ' ' : ' · '));
+        label.appendChild(h('span', { class: 'nowrap', text: part }));
+      });
+      eventInfo = h('p', { class: 'event-info' }, [svgIcon(ICON.calendar), label]);
+    }
 
     var hero = null;
     if (post.heroImage) {
