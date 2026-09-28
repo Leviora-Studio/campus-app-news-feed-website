@@ -32,8 +32,8 @@ Auf dem Server (z. B. Hostinger-VPS):
 
 ```bash
 mkdir campus-koethen-news && cd campus-koethen-news
-curl -O https://raw.githubusercontent.com/erikenglerdev/campus-app-news-feed-website/main/docker-compose.yml
-curl -o .env https://raw.githubusercontent.com/erikenglerdev/campus-app-news-feed-website/main/.env.example
+curl -O https://raw.githubusercontent.com/Leviora-Studio/campus-app-news-feed-website/main/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/Leviora-Studio/campus-app-news-feed-website/main/.env.example
 # .env anpassen (API_BASE_URL, IMAGE_TAG, HOST_PORT)
 docker compose pull
 docker compose up -d
@@ -81,9 +81,10 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-Image: `ghcr.io/erikenglerdev/campus-app-news-feed-website`
+Image: `ghcr.io/leviora-studio/campus-app-news-feed-website`
+Repository: https://github.com/Leviora-Studio/campus-app-news-feed-website
 
-> Beim allerersten Push prüfen, ob das Paket unter *GitHub → Profil → Packages → campus-app-news-feed-website → Package settings* auf **Public** steht, damit es ohne Login gepullt werden kann.
+> Beim allerersten Push prüfen, ob das Paket unter *GitHub → Leviora-Studio → Packages → campus-app-news-feed-website → Package settings* auf **Public** steht, damit es ohne Login gepullt werden kann.
 
 ## Lokal entwickeln
 

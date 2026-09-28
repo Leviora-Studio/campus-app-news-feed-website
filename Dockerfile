@@ -8,7 +8,7 @@ ARG VCS_REF=unknown
 
 LABEL org.opencontainers.image.title="campus-app-news-feed-website" \
       org.opencontainers.image.description="Statische Website mit allen News und Events der Campus-Köthen-App" \
-      org.opencontainers.image.source="https://github.com/erikenglerdev/campus-app-news-feed-website" \
+      org.opencontainers.image.source="https://github.com/Leviora-Studio/campus-app-news-feed-website" \
       org.opencontainers.image.version="${APP_VERSION}" \
       org.opencontainers.image.revision="${VCS_REF}" \
       org.opencontainers.image.created="${BUILD_DATE}"

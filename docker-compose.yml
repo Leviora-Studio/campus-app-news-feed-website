@@ -5,7 +5,7 @@
 
 services:
   web:
-    image: ghcr.io/erikenglerdev/campus-app-news-feed-website:${IMAGE_TAG:-latest}
+    image: ghcr.io/leviora-studio/campus-app-news-feed-website:${IMAGE_TAG:-latest}
     container_name: campus-koethen-news
     restart: unless-stopped
     environment:
