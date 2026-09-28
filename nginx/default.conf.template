@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Erik Engler (Leviora Studio)
 # Campus Köthen – News & Events
 # Rendered at container start by the nginx image (envsubst) into /etc/nginx/conf.d/.
 # Only environment variables that are actually set are substituted, nginx's own
@@ -87,6 +89,12 @@ server {
     # "no-cache" = the browser may keep a copy but must revalidate it (cheap 304
     # via ETag) on every load, so a new deployment is visible immediately.
     location = /index.html {
+        add_header Cache-Control "no-cache" always;
+        include /etc/nginx/snippets/security-headers.conf;
+    }
+
+    location = /LICENSE {
+        default_type text/plain;
         add_header Cache-Control "no-cache" always;
         include /etc/nginx/snippets/security-headers.conf;
     }

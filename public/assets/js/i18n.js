@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: AGPL-3.0-only
+ * Copyright (C) 2026 Erik Engler (Leviora Studio) */
 /* Campus Köthen – News & Events · UI texts and language handling (shared by all pages) */
 (function () {
   'use strict';
@@ -32,6 +34,7 @@
       imprint: 'Impressum',
       privacy: 'Datenschutz',
       appWebsite: 'App-Website',
+      sourceCode: 'Quellcode',
       independence: 'Keine offizielle Website der Hochschule Anhalt.',
       showMore: 'Mehr anzeigen',
       showLess: 'Weniger anzeigen',
@@ -95,6 +98,7 @@
       imprint: 'Legal notice',
       privacy: 'Privacy',
       appWebsite: 'App website',
+      sourceCode: 'Source code',
       independence: 'Not an official website of Anhalt University of Applied Sciences.',
       showMore: 'Show more',
       showLess: 'Show less',

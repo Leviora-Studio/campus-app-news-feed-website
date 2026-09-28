@@ -113,7 +113,13 @@ docker-compose.yml
 .github/workflows/docker-publish.yml
 ```
 
-## Lizenzen
+## Lizenz
 
-Schriftart „Albert Sans“: SIL Open Font License 1.1 (`public/assets/fonts/AlbertSans-OFL.txt`).
-Name und Logo „Campus Köthen“: Erik Engler, handelnd unter „Leviora Studio“.
+Copyright © 2026 Erik Engler, handelnd unter „Leviora Studio“.
+
+Der Quellcode steht unter der **GNU Affero General Public License v3.0 only** (`AGPL-3.0-only`), siehe [`LICENSE`](LICENSE). Wer die Website verändert und öffentlich betreibt, muss den Besucher*innen den geänderten Quellcode zugänglich machen (§ 13 AGPL) – die Website verlinkt dafür im Footer auf dieses Repository.
+
+Ausgenommen von der AGPL:
+
+- Schriftart „Albert Sans“: SIL Open Font License 1.1 (`public/assets/fonts/AlbertSans-OFL.txt`)
+- Name und Logo „Campus Köthen“: Erik Engler, handelnd unter „Leviora Studio“

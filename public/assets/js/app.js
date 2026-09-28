@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: AGPL-3.0-only
+ * Copyright (C) 2026 Erik Engler (Leviora Studio) */
 /* Campus Köthen – News & Events
  * Loads every post and event plus the entries of the public (Google) calendars
  * from the Campus Köthen API (via the same-origin proxy under /api/, configured
