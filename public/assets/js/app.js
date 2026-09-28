@@ -830,7 +830,7 @@
     };
   }
 
-  /** Drop calendar entries that duplicate an event post (same start minute and same channel or title). */
+  /** Drop calendar entries that duplicate an event post (same start minute and same channel). */
   function withoutDuplicates(calItems, posts) {
     var minute = function (iso) { return Math.round(new Date(iso).getTime() / 60000); };
     var keys = new Set();
@@ -838,11 +838,10 @@
       if (!p.eventStart) return;
       var m = minute(p.eventStart);
       (p.channels || []).forEach(function (c) { keys.add(m + '|c|' + c.slug); });
-      keys.add(m + '|t|' + normalize(p.title));
     });
     return calItems.filter(function (e) {
       var m = minute(e.eventStart);
-      return !keys.has(m + '|c|' + e.primaryChannel.slug) && !keys.has(m + '|t|' + normalize(e.title));
+      return !keys.has(m + '|c|' + e.primaryChannel.slug);
     });
   }
 

@@ -3,7 +3,7 @@
 Statische Website, die **alle** Neuigkeiten und Veranstaltungen der [Campus-Köthen-App](https://campus-koethen.sturahsa.de/) anzeigt – unabhängig von Datum und Kanal. Besucher*innen können selbst nach Kanal, Art (News/Event) und Suchbegriff filtern. Deutsch und Englisch, Hell- und Dunkelmodus.
 
 - **Neuigkeiten:** alle Beiträge, neueste zuerst, Filter nach Kanal und Art, Volltextsuche
-- **Veranstaltungen:** alle Event-Beiträge **und die Termine der öffentlichen Google-Kalender** (wie in der App) – kommende (aufsteigend) und vergangene (absteigend), mit „Heute/Morgen/Läuft gerade“-Hinweisen und `.ics`-Download. Kalender, die zu einem Kanal gehören, werden unter diesem Kanal gefiltert; Kalender ohne Kanal (z. B. Mensakeller) bekommen einen eigenen Filter. Termine, die zugleich als Event-Beitrag existieren (gleicher Start und gleicher Kanal oder Titel), erscheinen nur einmal.
+- **Veranstaltungen:** alle Event-Beiträge **und die Termine der öffentlichen Google-Kalender** (wie in der App) – kommende (aufsteigend) und vergangene (absteigend), mit „Heute/Morgen/Läuft gerade“-Hinweisen und `.ics`-Download. Kalender, die zu einem Kanal gehören, werden unter diesem Kanal gefiltert; Kalender ohne Kanal (z. B. Mensakeller) bekommen einen eigenen Filter. Termine, die zugleich als Event-Beitrag existieren (gleicher Start und gleicher Kanal), erscheinen nur einmal.
 - Teilbare Ansichten (`?tab=events&channels=fsr-ins&q=…`) und Direktlinks auf Beiträge (`#post-<slug>`)
 - Impressum & Datenschutzerklärung unter `/rechtliches/`
 - Keine Cookies, kein Tracking, keine externen Ressourcen (Schrift und Logo werden selbst ausgeliefert)
