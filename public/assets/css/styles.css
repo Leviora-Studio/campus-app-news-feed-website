@@ -295,6 +295,7 @@ svg { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColo
 }
 .event-location svg { margin-top: 0.2em; }
 .card-content.is-plain p { white-space: pre-line; }
+.card-content:empty { display: none; }
 .chip-calendar .chip-dot { border-radius: 3px; }
 
 .card-title { margin: 10px 0 6px; font-size: 1.28rem; line-height: 1.25; letter-spacing: -0.015em; font-weight: 800; }
