@@ -63,7 +63,10 @@
       switchLang: 'Switch to English',
       tabsLabel: 'Ansicht',
       pastToggleShow: 'Vergangene anzeigen',
-      filtersLabel: 'Filter'
+      filtersLabel: 'Filter',
+      calendarBadge: 'Kalender',
+      cancelled: 'Abgesagt',
+      openInGoogle: 'Im Google Kalender öffnen'
     },
     en: {
       skip: 'Skip to content',
@@ -123,7 +126,10 @@
       switchLang: 'Auf Deutsch umschalten',
       tabsLabel: 'View',
       pastToggleShow: 'Show past events',
-      filtersLabel: 'Filters'
+      filtersLabel: 'Filters',
+      calendarBadge: 'Calendar',
+      cancelled: 'Cancelled',
+      openInGoogle: 'Open in Google Calendar'
     }
   };
 

@@ -3,7 +3,7 @@
 Statische Website, die **alle** Neuigkeiten und Veranstaltungen der [Campus-Köthen-App](https://campus-koethen.sturahsa.de/) anzeigt – unabhängig von Datum und Kanal. Besucher*innen können selbst nach Kanal, Art (News/Event) und Suchbegriff filtern. Deutsch und Englisch, Hell- und Dunkelmodus.
 
 - **Neuigkeiten:** alle Beiträge, neueste zuerst, Filter nach Kanal und Art, Volltextsuche
-- **Veranstaltungen:** alle Events – kommende (aufsteigend) und vergangene (absteigend), mit „Heute/Morgen/Läuft gerade“-Hinweisen und `.ics`-Download
+- **Veranstaltungen:** alle Event-Beiträge **und die Termine der öffentlichen Google-Kalender** (wie in der App) – kommende (aufsteigend) und vergangene (absteigend), mit „Heute/Morgen/Läuft gerade“-Hinweisen und `.ics`-Download. Kalender, die zu einem Kanal gehören, werden unter diesem Kanal gefiltert; Kalender ohne Kanal (z. B. Mensakeller) bekommen einen eigenen Filter. Termine, die zugleich als Event-Beitrag existieren (gleicher Start und gleicher Kanal oder Titel), erscheinen nur einmal.
 - Teilbare Ansichten (`?tab=events&channels=fsr-ins&q=…`) und Direktlinks auf Beiträge (`#post-<slug>`)
 - Impressum & Datenschutzerklärung unter `/rechtliches/`
 - Keine Cookies, kein Tracking, keine externen Ressourcen (Schrift und Logo werden selbst ausgeliefert)
@@ -16,11 +16,13 @@ Browser ──► nginx (Container, Port 8080)
               └─ /api/v1/…    Read-only-Proxy ──► API_BASE_URL (Campus-Köthen-API)
 ```
 
-Die Campus-API erlaubt keine Cross-Origin-Aufrufe aus dem Browser (CORS). Deshalb leitet nginx eine feste Liste von Endpunkten (`/v1/posts`, `/v1/posts/channels`, `/v1/posts/tags`, `/v1/posts/{slug}`, `/v1/media/uploads/{datei}`, `/v1/environment`) an die API weiter. Nebeneffekte:
+Die Campus-API erlaubt keine Cross-Origin-Aufrufe aus dem Browser (CORS). Deshalb leitet nginx eine feste Liste von Endpunkten (`/v1/posts`, `/v1/posts/channels`, `/v1/posts/tags`, `/v1/posts/{slug}`, `/v1/calendars`, `/v1/calendars/events`, `/v1/media/uploads/{datei}`, `/v1/environment`) an die API weiter. Nebeneffekte:
 
 - IP-Adresse, Cookies, Referrer und User-Agent der Besucher*innen werden **nicht** an die API weitergegeben.
 - Es wird **nichts gecacht** – weder auf dem Server noch im Browser (`Cache-Control: no-store`). Jede Anfrage geht live an die API, Website und App zeigen damit immer exakt dieselben Inhalte. Ist die API nicht erreichbar, zeigt die Website einen Fehlerhinweis mit „Erneut versuchen“.
 - Zugriffsprotokolle speichern nur gekürzte IP-Adressen, Docker rotiert sie (5 × 10 MB).
+
+Es werden **alle** Kalendertermine geladen, die die API liefert. Da die API pro Anfrage nur einen begrenzten Zeitraum erlaubt (aktuell 390 Tage), fragt die Website ausgehend von heute Zeitfenster für Zeitfenster in die Vergangenheit und in die Zukunft ab, bis zwei Fenster hintereinander leer sind. Die Fenstergröße übernimmt sie automatisch aus der API.
 
 Die API-Adresse wird über die Umgebungsvariable `API_BASE_URL` gesetzt (Origin ohne Pfad und ohne abschließenden Slash).
 

@@ -59,7 +59,7 @@ server {
         limit_req zone=campus_api_rl burst=60 nodelay;
         limit_req_status 429;
 
-        location ~ ^/api/v1/(posts|posts/channels|posts/tags|environment)$ {
+        location ~ ^/api/v1/(posts|posts/channels|posts/tags|environment|calendars|calendars/events)$ {
             limit_except GET { deny all; }
             limit_req zone=campus_api_rl burst=60 nodelay;
             include /etc/nginx/conf.d/api-proxy.inc;

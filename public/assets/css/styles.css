@@ -23,6 +23,7 @@
   --info-text: #075985;
   --success: #1D7A55;
   --success-surface: #DCF3E8;
+  --error: #B3261E;
   --warning-surface: #FFF1D6;
   --warning-text: #7A4B00;
   --on-primary: #FFFFFF;
@@ -57,6 +58,7 @@
     --info-text: #A5DBFA;
     --success: #6FD3A5;
     --success-surface: #123326;
+    --error: #F2B8B5;
     --warning-surface: #3A2A0C;
     --warning-text: #F7D18A;
     --on-primary: #2A0716;
@@ -280,6 +282,18 @@ svg { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColo
 .badge-tag-event { background: var(--primary-container); color: var(--primary-strong); }
 .badge-soon { background: var(--warning-surface); color: var(--warning-text); }
 .badge-live { background: var(--success-surface); color: var(--success); }
+.badge-calendar { background: color-mix(in srgb, var(--ch) 12%, var(--surface)); color: color-mix(in srgb, var(--ch) var(--ch-mix), var(--mix-base)); }
+.badge-cancelled { background: color-mix(in srgb, var(--error) 14%, var(--surface)); color: var(--error); }
+.is-cancelled .card-title { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--text-secondary); }
+.handle-calendar { display: inline-flex; align-items: center; gap: 5px; }
+.handle-calendar svg { width: 1em; height: 1em; }
+.event-location {
+  display: flex; align-items: flex-start; gap: 8px; margin: -4px 0 10px;
+  color: var(--text-secondary); font-weight: 600; font-size: 0.93rem;
+}
+.event-location svg { margin-top: 0.2em; }
+.card-content.is-plain p { white-space: pre-line; }
+.chip-calendar .chip-dot { border-radius: 3px; }
 
 .card-title { margin: 10px 0 6px; font-size: 1.28rem; line-height: 1.25; letter-spacing: -0.015em; font-weight: 800; }
 

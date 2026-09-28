@@ -1,7 +1,8 @@
 /* Campus Köthen – News & Events
- * Loads every post and event from the Campus Köthen API (via the same-origin
- * proxy under /api/, configured through API_BASE_URL) and renders them with
- * client-side filtering by channel, type and full-text search.
+ * Loads every post and event plus the entries of the public (Google) calendars
+ * from the Campus Köthen API (via the same-origin proxy under /api/, configured
+ * through API_BASE_URL) and renders them with client-side filtering by channel,
+ * calendar, type and full-text search.
  */
 (function () {
   'use strict';
@@ -10,10 +11,17 @@
   var PAGE_SIZE = 50;               // API maximum
   var REFRESH_MS = 5 * 60 * 1000;   // auto refresh interval while the tab is visible
   var TZ = 'Europe/Berlin';
+  // Public (Google) calendars synced by the API. The API limits one request to a
+  // maximum date range, so all entries are collected window by window, outwards
+  // from today in both directions, until CAL_EMPTY_STOP windows in a row are empty.
+  var CAL_EMPTY_STOP = 2;
+  var CAL_MAX_WINDOWS = 15;         // safety net per direction
   var t = function () { return window.I18N.t.apply(null, arguments); };
 
   var state = {
     posts: [],
+    calendars: [],
+    calEvents: [],                // calendar entries, normalised to the post shape
     channels: [],
     tags: [],
     truncated: false,
@@ -68,7 +76,8 @@
     link: 'M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1',
     external: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
     chevron: 'm6 9 6 6 6-6',
-    download: 'M12 4v11M7 10l5 5 5-5M5 20h14'
+    download: 'M12 4v11M7 10l5 5 5-5M5 20h14',
+    pin: 'M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z'
   };
 
   function isSafeHref(url) {
@@ -261,7 +270,9 @@
     lines.push('SUMMARY:' + icsEscape(post.title));
     var desc = blocksToText(post.content);
     if (desc) lines.push('DESCRIPTION:' + icsEscape(desc));
-    lines.push('URL:' + location.origin + '/#post-' + encodeURIComponent(post.slug));
+    if (post.location) lines.push('LOCATION:' + icsEscape(post.location));
+    if (post.calStatus === 'cancelled') lines.push('STATUS:CANCELLED');
+    lines.push('URL:' + location.origin + '/' + itemHash(post));
     lines.push('END:VEVENT', 'END:VCALENDAR');
     var blob = new Blob([lines.map(icsFold).join('\r\n') + '\r\n'], { type: 'text/calendar;charset=utf-8' });
     var url = URL.createObjectURL(blob);
@@ -284,8 +295,12 @@
     toastTimer = setTimeout(function () { box.classList.remove('is-visible'); }, 2200);
   }
 
+  function itemHash(item) {
+    return (item.kind === 'calendar' ? '#event-' : '#post-') + encodeURIComponent(item.slug);
+  }
+
   function copyLink(post) {
-    var url = location.origin + location.pathname + '#post-' + encodeURIComponent(post.slug);
+    var url = location.origin + location.pathname + itemHash(post);
     var done = function () { toast(t('copied')); };
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(url).then(done, function () { history.replaceState(null, '', url); done(); });
@@ -298,10 +313,11 @@
   /* ----------------------------------------------------------------- cards */
 
   function channelHandle(ch) {
+    var isCal = String(ch.slug).indexOf('cal:') === 0;
     return h('button', {
-      type: 'button', class: 'handle', style: { '--ch': colorOf(ch) }, title: ch.name,
+      type: 'button', class: 'handle' + (isCal ? ' handle-calendar' : ''), style: { '--ch': colorOf(ch) }, title: ch.name,
       onclick: function () { selectOnlyChannel(ch.slug); }
-    }, ['@' + ch.name]);
+    }, isCal ? [svgIcon(ICON.calendar), ch.name] : ['@' + ch.name]);
   }
 
   function dateBlock(post) {
@@ -331,6 +347,8 @@
 
     var badges = h('div', { class: 'card-badges' }, [
       post.tag ? h('span', { class: 'badge badge-tag badge-tag-' + post.tag.slug, text: post.tag.name }) : null,
+      post.kind === 'calendar' ? h('span', { class: 'badge badge-calendar', text: t('calendarBadge') }) : null,
+      post.calStatus === 'cancelled' ? h('span', { class: 'badge badge-cancelled', text: t('cancelled') }) : null,
       isEvent && variant === 'event' ? (function () {
         var b = eventBadge(post); return b ? h('span', { class: 'badge ' + b.cls, text: b.text }) : null;
       })() : null
@@ -346,6 +364,9 @@
       });
       eventInfo = h('p', { class: 'event-info' }, [svgIcon(ICON.calendar), label]);
     }
+    var locationInfo = post.location ? h('p', { class: 'event-location' }, [
+      svgIcon(ICON.pin), h('span', { text: post.location })
+    ]) : null;
 
     var hero = null;
     if (post.heroImage) {
@@ -358,7 +379,7 @@
       }
     }
 
-    var content = h('div', { class: 'card-content' + (expanded ? ' is-expanded' : ''), id: contentId },
+    var content = h('div', { class: 'card-content' + (post.kind === 'calendar' ? ' is-plain' : '') + (expanded ? ' is-expanded' : ''), id: contentId },
       (post.content || []).map(renderBlock));
 
     var toggle = h('button', {
@@ -379,6 +400,10 @@
         class: 'icon-btn', href: post.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
         title: t('source') + ': ' + (post.sourceName || post.sourceUrl)
       }, [svgIcon(ICON.external), h('span', { class: 'icon-btn-label', text: post.sourceName || t('source') })]) : null,
+      post.calendar && isSafeHref(post.calendar.googleOpenUrl) ? h('a', {
+        class: 'icon-btn', href: post.calendar.googleOpenUrl, target: '_blank', rel: 'noopener noreferrer',
+        title: t('openInGoogle') + ': ' + post.calendar.name, 'aria-label': t('openInGoogle')
+      }, [svgIcon(ICON.external), h('span', { class: 'icon-btn-label', text: 'Google' })]) : null,
       isEvent ? h('button', {
         type: 'button', class: 'icon-btn', title: t('addToCalendar'), 'aria-label': t('addToCalendar'),
         onclick: function () { downloadIcs(post); }
@@ -392,11 +417,12 @@
     var body = h('div', { class: 'card-body' }, [
       meta, badges,
       h('h3', { class: 'card-title', text: post.title }),
-      eventInfo, hero, content, actions
+      eventInfo, locationInfo, hero, content, actions
     ]);
 
     var card = h('article', {
-      class: 'card card-' + variant + (variant === 'event' && !isUpcoming(post) ? ' is-past' : ''),
+      class: 'card card-' + variant + (variant === 'event' && !isUpcoming(post) ? ' is-past' : '') +
+        (post.kind === 'calendar' ? ' card-calendar' : '') + (post.calStatus === 'cancelled' ? ' is-cancelled' : ''),
       id: variant === 'news' ? 'post-' + post.slug : 'event-' + post.slug,
       style: { '--ch': colorOf(primary) },
       'data-slug': post.slug
@@ -430,14 +456,33 @@
 
   /* --------------------------------------------------------------- filters */
 
+  /* Filter sources: news → channels; events → channels plus calendars that are
+   * not linked to a channel. Selected keys that don't exist in the current tab
+   * are ignored there. */
+  function sourcesForTab() {
+    var list = state.channels.map(function (c) { return { slug: c.slug, name: c.name, colorHex: c.colorHex, description: c.description }; });
+    if (state.tab === 'events') {
+      state.calendars.forEach(function (cal) {
+        if (!calendarChannel(cal)) list.push({ slug: 'cal:' + cal.slug, name: cal.name, colorHex: cal.colorHex, isCalendar: true });
+      });
+    }
+    return list;
+  }
+
+  function effectiveSelection() {
+    var keys = new Set(sourcesForTab().map(function (s) { return s.slug; }));
+    return new Set(Array.from(state.selectedChannels).filter(function (k) { return keys.has(k); }));
+  }
+
   function matches(post) {
-    if (state.selectedChannels.size) {
-      var hit = (post.channels || []).some(function (c) { return state.selectedChannels.has(c.slug); }) ||
-        (post.primaryChannel && state.selectedChannels.has(post.primaryChannel.slug));
+    var sel = effectiveSelection();
+    if (sel.size) {
+      var hit = (post.channels || []).some(function (c) { return sel.has(c.slug); }) ||
+        (post.primaryChannel && sel.has(post.primaryChannel.slug));
       if (!hit) return false;
     }
     if (state.query) {
-      var hay = post._search || (post._search = normalize(post.title + ' ' + blocksToText(post.content) + ' ' +
+      var hay = post._search || (post._search = normalize(post.title + ' ' + blocksToText(post.content) + ' ' + (post.location || '') + ' ' +
         (post.channels || []).map(function (c) { return c.name; }).join(' ')));
       var terms = normalize(state.query).split(/\s+/).filter(Boolean);
       if (!terms.every(function (term) { return hay.indexOf(term) !== -1; })) return false;
@@ -453,7 +498,9 @@
     });
   }
 
-  function allEvents() { return state.posts.filter(function (p) { return !!p.eventStart; }); }
+  function allEvents() {
+    return state.posts.filter(function (p) { return !!p.eventStart; }).concat(state.calEvents);
+  }
 
   function selectOnlyChannel(slug) {
     state.selectedChannels = new Set([slug]);
@@ -493,21 +540,22 @@
 
   function renderChips() {
     var counts = {};
-    state.posts.forEach(function (p) {
+    (state.tab === 'events' ? allEvents() : state.posts).forEach(function (p) {
       (p.channels || []).forEach(function (c) { counts[c.slug] = (counts[c.slug] || 0) + 1; });
     });
+    var sel = effectiveSelection();
 
     el.chipsChannels.replaceChildren(
       h('button', {
-        type: 'button', class: 'chip', 'aria-pressed': String(state.selectedChannels.size === 0),
+        type: 'button', class: 'chip', 'aria-pressed': String(sel.size === 0),
         onclick: function () { state.selectedChannels.clear(); syncUrl(); render(); }
       }, [t('allChannels')])
     );
-    state.channels.forEach(function (ch) {
-      var on = state.selectedChannels.has(ch.slug);
+    sourcesForTab().forEach(function (ch) {
+      var on = sel.has(ch.slug);
       el.chipsChannels.appendChild(h('button', {
-        type: 'button', class: 'chip chip-channel', 'aria-pressed': String(on), style: { '--ch': colorOf(ch) },
-        title: ch.description || ch.name,
+        type: 'button', class: 'chip chip-channel' + (ch.isCalendar ? ' chip-calendar' : ''), 'aria-pressed': String(on), style: { '--ch': colorOf(ch) },
+        title: ch.isCalendar ? t('calendarBadge') + ': ' + ch.name : (ch.description || ch.name),
         onclick: function () {
           if (state.selectedChannels.has(ch.slug)) state.selectedChannels.delete(ch.slug);
           else state.selectedChannels.add(ch.slug);
@@ -591,7 +639,7 @@
       return;
     }
 
-    var filtersActive = state.selectedChannels.size || state.query || (state.tab === 'news' && state.selectedTag);
+    var filtersActive = effectiveSelection().size || state.query || (state.tab === 'news' && state.selectedTag);
 
     if (state.tab === 'news') {
       var items = newsItems();
@@ -628,14 +676,16 @@
     state.pendingHash = null;
     if (!m) return;
     var slug = decodeURIComponent(m[1]);
-    var post = state.posts.find(function (p) { return p.slug === slug; });
+    var post = state.posts.find(function (p) { return p.slug === slug; }) ||
+      state.calEvents.find(function (p) { return p.slug === slug; });
     if (!post) return;
+    if (post.kind === 'calendar' && state.tab !== 'events') { state.tab = 'events'; syncUrl(); state.pendingHash = hash; render(); return; }
     var id = (state.tab === 'events' && post.eventStart ? 'event-' : 'post-') + slug;
     var target = document.getElementById(id);
     if (!target) {
       // Target hidden by filters → reset them and show it in the news feed
       state.selectedChannels.clear(); state.selectedTag = null; state.query = ''; el.search.value = '';
-      state.tab = 'news';
+      state.tab = post.kind === 'calendar' ? 'events' : 'news';
       state.pendingHash = hash;
       syncUrl(); render();
       return;
@@ -676,6 +726,124 @@
     });
   }
 
+  /* ---------------------------------------------------- public calendars */
+
+  function calendarChannel(cal) {
+    if (!cal || !cal.channelSlug) return null;
+    return state.channels.find(function (c) { return c.slug === cal.channelSlug; }) || null;
+  }
+
+  function isoDay(d) { return d.toISOString().slice(0, 10); }
+
+  function fetchCalendarEvents(calendars) {
+    if (!calendars.length) return Promise.resolve({ events: [], truncated: false });
+    var qs = calendars.map(function (c) { return 'calendar=' + encodeURIComponent(c.slug); }).join('&');
+    var day = 86400000;
+    var seen = new Set(), events = [], truncated = false;
+    var collect = function (res) {
+      truncated = truncated || !!(res.meta && res.meta.truncated);
+      (res.data || []).forEach(function (ev) { if (!seen.has(ev.id)) { seen.add(ev.id); events.push(ev); } });
+      return (res.data || []).length;
+    };
+    var today = new Date(isoDay(new Date()) + 'T00:00:00Z');
+
+    // 1) Default request (today onwards) also tells us the allowed window size
+    return getJson('/calendars/events?' + qs).then(function (first) {
+      collect(first);
+      var m = first.meta || {};
+      var span = m.maxRangeDays ? m.maxRangeDays - 1
+        : (m.from && m.to ? Math.round((new Date(m.to) - new Date(m.from)) / day) : 119);
+      span = Math.max(1, span);
+      var firstEnd = m.to ? new Date(m.to + 'T00:00:00Z') : new Date(today.getTime() + span * day);
+
+      // 2) Walk forwards and backwards until consecutive windows come back empty
+      var walk = function (direction) {
+        var empty = 0, count = 0;
+        var cursor = direction > 0 ? new Date(firstEnd.getTime() + day) : new Date(today.getTime() - day);
+        var step = function () {
+          if (empty >= CAL_EMPTY_STOP || count >= CAL_MAX_WINDOWS) return Promise.resolve();
+          var from = direction > 0 ? cursor : new Date(cursor.getTime() - span * day);
+          var to = direction > 0 ? new Date(cursor.getTime() + span * day) : cursor;
+          count++;
+          return getJson('/calendars/events?' + qs + '&from=' + isoDay(from) + '&to=' + isoDay(to)).then(function (res) {
+            empty = collect(res) ? 0 : empty + 1;
+            cursor = direction > 0 ? new Date(to.getTime() + day) : new Date(from.getTime() - day);
+            return step();
+          });
+        };
+        return step();
+      };
+      return Promise.all([walk(-1), walk(1)]);
+    }).then(function () {
+      return { events: events, truncated: truncated };
+    });
+  }
+
+  /** Plain-text (possibly HTML-ish, from Google) description → content blocks with links. */
+  function descriptionToBlocks(desc) {
+    if (!desc) return [];
+    var text = String(desc).replace(/<(script|style)[\s\S]*?<\/\1>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n');
+    // Strip remaining markup safely (DOMParser never executes scripts)
+    text = new DOMParser().parseFromString('<body>' + text + '</body>', 'text/html').body.textContent || '';
+    return text.split(/\n{2,}/).map(function (para) {
+      var children = [];
+      para.trim().split(/(https?:\/\/[^\s<>"]+)/g).forEach(function (part, i) {
+        if (!part) return;
+        if (i % 2 === 1) {
+          var url = part.replace(/[.,;:!?)]+$/, '');
+          children.push({ type: 'link', url: url, children: [{ type: 'text', text: url }] });
+          if (url.length < part.length) children.push({ type: 'text', text: part.slice(url.length) });
+        } else {
+          children.push({ type: 'text', text: part });
+        }
+      });
+      return { type: 'paragraph', children: children };
+    }).filter(function (b) { return b.children.length; });
+  }
+
+  function normalizeCalendarEvent(ev, calBySlug) {
+    var cal = calBySlug[ev.calendarSlug] || { slug: ev.calendarSlug, name: ev.calendarSlug, colorHex: '#C2185B' };
+    var ch = calendarChannel(cal);
+    var source = ch ? { slug: ch.slug, name: ch.name, colorHex: ch.colorHex }
+      : { slug: 'cal:' + cal.slug, name: cal.name, colorHex: cal.colorHex };
+    var end = ev.end ? new Date(ev.end) : null;
+    // Google all-day events end at midnight of the following day (exclusive)
+    if (ev.allDay && end && end > new Date(ev.start)) end = new Date(end.getTime() - 60000);
+    return {
+      kind: 'calendar',
+      slug: 'cal-' + ev.id,
+      title: ev.title || '',
+      publishedAt: null,
+      heroImage: null,
+      tag: null,
+      primaryChannel: source,
+      channels: [source],
+      content: descriptionToBlocks(ev.description),
+      location: ev.location || null,
+      calStatus: ev.status || 'confirmed',
+      calendar: cal,
+      eventStart: ev.start,
+      eventEnd: end ? end.toISOString() : null,
+      eventAllDay: !!ev.allDay
+    };
+  }
+
+  /** Drop calendar entries that duplicate an event post (same start minute and same channel or title). */
+  function withoutDuplicates(calItems, posts) {
+    var minute = function (iso) { return Math.round(new Date(iso).getTime() / 60000); };
+    var keys = new Set();
+    posts.forEach(function (p) {
+      if (!p.eventStart) return;
+      var m = minute(p.eventStart);
+      (p.channels || []).forEach(function (c) { keys.add(m + '|c|' + c.slug); });
+      keys.add(m + '|t|' + normalize(p.title));
+    });
+    return calItems.filter(function (e) {
+      var m = minute(e.eventStart);
+      return !keys.has(m + '|c|' + e.primaryChannel.slug) && !keys.has(m + '|t|' + normalize(e.title));
+    });
+  }
+
   function load(showSpinner) {
     if (state.loading) return;
     state.loading = true;
@@ -685,14 +853,30 @@
       getJson('/posts/channels'),
       getJson('/posts/tags').catch(function () { return { data: [] }; }),
       fetchAllPosts(),
-      getJson('/environment').catch(function () { return null; })
+      getJson('/environment').catch(function () { return null; }),
+      // Calendars are optional: if they fail, news and event posts still show
+      getJson('/calendars').then(function (res) {
+        var cals = res.data || [];
+        return fetchCalendarEvents(cals).then(function (r) { return { calendars: cals, events: r.events, truncated: r.truncated }; });
+      }).catch(function (err) {
+        if (window.console) console.warn('[campus-koethen] calendars failed:', err);
+        return { calendars: [], events: [], truncated: false };
+      })
     ]).then(function (res) {
       state.channels = (res[0].data || []).slice().sort(function (a, b) {
         return (a.sortOrder - b.sortOrder) || a.name.localeCompare(b.name);
       });
       state.tags = res[1].data || [];
       state.posts = res[2].posts;
-      state.truncated = res[2].truncated;
+      state.truncated = res[2].truncated || res[4].truncated;
+      state.calendars = res[4].calendars.slice().sort(function (a, b) {
+        return (a.sortOrder - b.sortOrder) || a.name.localeCompare(b.name);
+      });
+      var calBySlug = {};
+      state.calendars.forEach(function (c) { calBySlug[c.slug] = c; });
+      state.calEvents = withoutDuplicates(res[4].events.map(function (ev) {
+        return normalizeCalendarEvent(ev, calBySlug);
+      }), state.posts);
       state.loadedAt = new Date();
       state.error = null;
       var banner = document.getElementById('test-banner');
@@ -753,7 +937,7 @@
     window.addEventListener('hashchange', function () { state.pendingHash = location.hash; handlePendingHash(); });
 
     window.I18N.onChange(function () {
-      state.posts.forEach(function (p) { delete p._search; });
+      state.posts.concat(state.calEvents).forEach(function (p) { delete p._search; });
       load(false);
       render();
     });
