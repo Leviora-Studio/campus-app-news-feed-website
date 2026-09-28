@@ -1,0 +1,46 @@
+# Shared proxy settings for the Campus API (rendered with envsubst at container start).
+# API_BASE_URL must be an origin without path, e.g. https://campus-koethen-api.sturahsa.de
+
+rewrite ^/api/(.*)$ /$1 break;
+proxy_pass ${API_BASE_URL};
+
+proxy_http_version 1.1;
+proxy_ssl_server_name on;
+proxy_ssl_verify on;
+proxy_ssl_verify_depth 4;
+proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+proxy_connect_timeout 5s;
+proxy_read_timeout 20s;
+
+# Privacy: do not pass anything that identifies the visitor to the API
+proxy_set_header Host $proxy_host;
+proxy_set_header Connection "";
+proxy_set_header X-Forwarded-For "";
+proxy_set_header X-Forwarded-Host "";
+proxy_set_header X-Forwarded-Proto "";
+proxy_set_header X-Real-IP "";
+proxy_set_header Forwarded "";
+proxy_set_header Cookie "";
+proxy_set_header Referer "";
+proxy_set_header Origin "";
+proxy_set_header User-Agent "campus-koethen-news-website";
+proxy_set_header Accept-Encoding "";
+
+# No caching: every request is answered live by the API, so the website always
+# shows exactly the same content as the app.
+proxy_cache off;
+proxy_buffering on;
+
+# Replace upstream response headers with our own
+proxy_hide_header Set-Cookie;
+proxy_hide_header Cache-Control;
+proxy_hide_header Expires;
+proxy_hide_header Content-Security-Policy;
+proxy_hide_header X-Frame-Options;
+proxy_hide_header Strict-Transport-Security;
+proxy_hide_header Referrer-Policy;
+proxy_hide_header X-Content-Type-Options;
+proxy_hide_header Access-Control-Allow-Origin;
+
+# Browsers must not cache API responses or images either
+add_header Cache-Control "no-store" always;

@@ -1,0 +1,9 @@
+# Override für lokale Entwicklung: baut das Image aus diesem Repository.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+services:
+  web:
+    image: campus-app-news-feed-website:local
+    build:
+      context: .
+      args:
+        APP_VERSION: local
