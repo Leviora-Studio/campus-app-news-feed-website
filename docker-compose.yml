@@ -21,8 +21,6 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    # No logging at all: Docker stores no container output
     logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "5"
+      driver: none

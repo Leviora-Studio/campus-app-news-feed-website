@@ -20,7 +20,7 @@ Die Campus-API erlaubt keine Cross-Origin-Aufrufe aus dem Browser (CORS). Deshal
 
 - IP-Adresse, Cookies, Referrer und User-Agent der Besucher*innen werden **nicht** an die API weitergegeben.
 - Es wird **nichts gecacht** – weder auf dem Server noch im Browser (`Cache-Control: no-store`). Jede Anfrage geht live an die API, Website und App zeigen damit immer exakt dieselben Inhalte. Ist die API nicht erreichbar, zeigt die Website einen Fehlerhinweis mit „Erneut versuchen“.
-- Es werden **keine Zugriffsprotokolle** geschrieben (`access_log off`); nginx protokolliert nur kritische Serverfehler ohne Besucherdaten. Auch im vorgeschalteten nginx auf dem Host sollte für diese Domain `access_log off;` gesetzt sein.
+- Es wird **überhaupt nichts protokolliert**: keine Zugriffe und keine Fehler (`access_log off`, `error_log /dev/null`), Docker speichert keine Container-Ausgaben (`logging: driver: none`). `docker compose logs` bleibt deshalb leer – bei Problemen hilft `docker compose ps` (Health-Status). Auch im vorgeschalteten nginx auf dem Host sollten für diese Domain `access_log off;` und `error_log /dev/null crit;` gesetzt sein.
 
 Es werden **alle** Kalendertermine geladen, die die API liefert. Da die API pro Anfrage nur einen begrenzten Zeitraum erlaubt (aktuell 390 Tage), fragt die Website ausgehend von heute Zeitfenster für Zeitfenster in die Vergangenheit und in die Zukunft ab, bis zwei Fenster hintereinander leer sind. Die Fenstergröße übernimmt sie automatisch aus der API.
 

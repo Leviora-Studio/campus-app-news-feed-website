@@ -17,10 +17,9 @@ server {
     charset utf-8;
     server_tokens off;
 
-    # No request logging at all. Only critical server errors (e.g. nginx cannot
-    # start) are written; these contain no visitor data.
+    # No logging at all – neither requests nor errors.
     access_log off;
-    error_log  /dev/stderr crit;
+    error_log  /dev/null crit;
 
     # Behind a reverse proxy on the same host / Docker network: use the real client IP
     # (only in memory for rate limiting – never logged, never forwarded upstream).

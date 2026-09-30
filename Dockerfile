@@ -18,7 +18,8 @@ LABEL org.opencontainers.image.title="campus-app-news-feed-website" \
 
 # Default API origin – override at runtime via API_BASE_URL (see .env.example)
 ENV API_BASE_URL=https://campus-koethen-api.sturahsa.de \
-    NGINX_ENVSUBST_FILTER=^API_BASE_URL$
+    NGINX_ENVSUBST_FILTER=^API_BASE_URL$ \
+    NGINX_ENTRYPOINT_QUIET_LOGS=1
 
 # --chmod makes the build independent of the file permissions in the checkout
 COPY --chmod=644 nginx/default.conf.template nginx/api-proxy.inc.template /etc/nginx/templates/
@@ -27,11 +28,13 @@ COPY --chown=nginx:nginx public/ /usr/share/nginx/html/
 COPY --chmod=644 LICENSE /usr/share/nginx/html/LICENSE
 
 USER root
+# No logging at all: also silence the global logs of the base image (nginx.conf)
 RUN set -eux; \
     apk add --no-cache ca-certificates; \
     find /usr/share/nginx/html -type f \( -name '*.html' -o -name '*.js' \) \
       -exec sed -i "s/__APP_VERSION__/${APP_VERSION}/g" {} +; \
     chmod -R a+rX /usr/share/nginx/html /etc/nginx/templates /etc/nginx/snippets; \
+    sed -i -E 's#^[[:space:]]*error_log[[:space:]].*#error_log /dev/null crit;#; s#^([[:space:]]*)access_log[[:space:]].*#\1access_log off;#' /etc/nginx/nginx.conf; \
     chown -R nginx:nginx /var/cache/nginx
 USER nginx
 
