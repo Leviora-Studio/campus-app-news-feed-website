@@ -122,4 +122,4 @@ Der Quellcode steht unter der **GNU Affero General Public License v3.0 only** (`
 Ausgenommen von der AGPL:
 
 - Schriftart „Albert Sans“: SIL Open Font License 1.1 (`public/assets/fonts/AlbertSans-OFL.txt`)
-- Name und Logo „Campus Köthen“: Erik Engler, handelnd unter „Leviora Studio“
+- Name und Logo „Campus Köthen“: Erik Engler, handelnd unter „Leviora Studio“, und Jona Loreen Sommer
