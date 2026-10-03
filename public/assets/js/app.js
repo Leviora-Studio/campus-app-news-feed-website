@@ -79,6 +79,7 @@
     external: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
     chevron: 'm6 9 6 6 6-6',
     download: 'M12 4v11M7 10l5 5 5-5M5 20h14',
+    close: 'M6 6l12 12M18 6 6 18',
     pin: 'M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z'
   };
 
@@ -214,14 +215,51 @@
         var img = block.image || block;
         var src = proxiedImage(img.url);
         if (!src) return null;
-        return h('figure', null, [h('img', {
-          src: src, alt: img.alternativeText || '', loading: 'lazy', decoding: 'async',
-          width: img.width || null, height: img.height || null
-        })]);
+        return imageThumb(src, img.alternativeText, 'post-image');
       }
       default:
         return null;
     }
+  }
+
+  /* ------------------------------------------------------------- images */
+
+  /** Square thumbnail; a click opens the complete image in a lightbox. */
+  function imageThumb(src, alt, cls) {
+    var label = alt ? t('openImage') + ': ' + alt : t('openImage');
+    return h('figure', { class: cls }, [
+      h('button', {
+        type: 'button', class: 'img-thumb', 'aria-label': label, title: t('openImage'),
+        onclick: function () { openLightbox(src, alt); }
+      }, [h('img', { src: src, alt: alt || '', loading: 'lazy', decoding: 'async' })])
+    ]);
+  }
+
+  var lightbox = null;
+  function openLightbox(src, alt) {
+    if (!lightbox) {
+      var img = h('img', { class: 'lightbox-img', alt: '' });
+      var caption = h('p', { class: 'lightbox-caption' });
+      var close = h('button', {
+        type: 'button', class: 'lightbox-close', 'aria-label': t('close'), title: t('close'),
+        onclick: function () { lightbox.close(); }
+      }, [svgIcon(ICON.close)]);
+      lightbox = h('dialog', { class: 'lightbox', 'aria-label': t('imageView') }, [close, img, caption]);
+      // Click on the backdrop (outside the image) closes the view
+      lightbox.addEventListener('click', function (e) { if (e.target === lightbox) lightbox.close(); });
+      lightbox.addEventListener('close', function () { img.removeAttribute('src'); });
+      lightbox._img = img; lightbox._caption = caption; lightbox._close = close;
+      document.body.appendChild(lightbox);
+    }
+    lightbox._img.src = src;
+    lightbox._img.alt = alt || '';
+    lightbox._caption.textContent = alt || '';
+    lightbox._caption.hidden = !alt;
+    lightbox._close.setAttribute('aria-label', t('close'));
+    lightbox._close.title = t('close');
+    lightbox.setAttribute('aria-label', t('imageView'));
+    if (typeof lightbox.showModal === 'function') lightbox.showModal();
+    else window.open(src, '_blank', 'noopener');
   }
 
   function blocksToText(blocks) {
@@ -374,10 +412,7 @@
     if (post.heroImage) {
       var src = proxiedImage(post.heroImage.url);
       if (src) {
-        hero = h('figure', { class: 'card-hero' }, [h('img', {
-          src: src, alt: post.heroImage.alternativeText || '', loading: 'lazy', decoding: 'async',
-          width: post.heroImage.width || null, height: post.heroImage.height || null
-        })]);
+        hero = imageThumb(src, post.heroImage.alternativeText, 'post-image card-hero');
       }
     }
 

@@ -67,6 +67,9 @@
       tabsLabel: 'Ansicht',
       pastToggleShow: 'Vergangene anzeigen',
       filtersLabel: 'Filter',
+      openImage: 'Bild vollständig anzeigen',
+      imageView: 'Bildansicht',
+      close: 'Schließen',
       calendarBadge: 'Kalender',
       cancelled: 'Abgesagt',
       openInGoogle: 'Im Google Kalender öffnen'
@@ -131,6 +134,9 @@
       tabsLabel: 'View',
       pastToggleShow: 'Show past events',
       filtersLabel: 'Filters',
+      openImage: 'Show full image',
+      imageView: 'Image view',
+      close: 'Close',
       calendarBadge: 'Calendar',
       cancelled: 'Cancelled',
       openInGoogle: 'Open in Google Calendar'
