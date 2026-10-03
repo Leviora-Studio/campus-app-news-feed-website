@@ -4,5 +4,6 @@
 .env.*
 !.env.example
 *.md
+!THIRD_PARTY_NOTICES.md
 docker-compose*.yml
 mock

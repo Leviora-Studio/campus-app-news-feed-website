@@ -119,7 +119,8 @@ Copyright © 2026 Erik Engler, handelnd unter „Leviora Studio“.
 
 Der Quellcode steht unter der **GNU Affero General Public License v3.0 only** (`AGPL-3.0-only`), siehe [`LICENSE`](LICENSE). Wer die Website verändert und öffentlich betreibt, muss den Besucher*innen den geänderten Quellcode zugänglich machen (§ 13 AGPL) – die Website verlinkt dafür im Footer auf dieses Repository.
 
-Ausgenommen von der AGPL:
+Ausgenommen von der AGPL (Details in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)):
 
 - Schriftart „Albert Sans“: SIL Open Font License 1.1 (`public/assets/fonts/AlbertSans-OFL.txt`)
+- Icons „x“, „chevron-down“ und „maximize-2“ aus Lucide: ISC-Lizenz bzw. MIT-Lizenz (Feather) (`public/assets/licenses/Lucide-LICENSE.txt`)
 - Name und Logo „Campus Köthen“: Erik Engler, handelnd unter „Leviora Studio“, und Jona Loreen Sommer

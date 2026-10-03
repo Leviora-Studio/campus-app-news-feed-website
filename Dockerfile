@@ -26,6 +26,7 @@ COPY --chmod=644 nginx/default.conf.template nginx/api-proxy.inc.template /etc/n
 COPY --chmod=644 nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --chown=nginx:nginx public/ /usr/share/nginx/html/
 COPY --chmod=644 LICENSE /usr/share/nginx/html/LICENSE
+COPY --chmod=644 THIRD_PARTY_NOTICES.md /usr/share/nginx/html/THIRD_PARTY_NOTICES.txt
 
 USER root
 # No logging at all: also silence the global logs of the base image (nginx.conf)

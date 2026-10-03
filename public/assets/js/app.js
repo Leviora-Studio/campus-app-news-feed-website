@@ -73,6 +73,9 @@
     return svg;
   }
 
+  // Icons "close" (x), "chevron" (chevron-down) and "expand" (maximize-2) are from
+  // Lucide (ISC, (c) Lucide Icons and Contributors; x and chevron-down derived from
+  // Feather, MIT, (c) Cole Bemis) – see THIRD_PARTY_NOTICES.md. The others are our own.
   var ICON = {
     calendar: 'M7 3v3M17 3v3M4 9h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z',
     link: 'M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1',
