@@ -80,6 +80,7 @@
     chevron: 'm6 9 6 6 6-6',
     download: 'M12 4v11M7 10l5 5 5-5M5 20h14',
     close: 'M6 6l12 12M18 6 6 18',
+    expand: 'M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7',
     pin: 'M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z'
   };
 
@@ -231,7 +232,11 @@
       h('button', {
         type: 'button', class: 'img-thumb', 'aria-label': label, title: t('openImage'),
         onclick: function () { openLightbox(src, alt); }
-      }, [h('img', { src: src, alt: alt || '', loading: 'lazy', decoding: 'async' })])
+      }, [
+        h('img', { src: src, alt: alt || '', loading: 'lazy', decoding: 'async' }),
+        // Visual hint that the image opens larger
+        h('span', { class: 'img-thumb-icon', 'aria-hidden': 'true' }, [svgIcon(ICON.expand)])
+      ])
     ]);
   }
 

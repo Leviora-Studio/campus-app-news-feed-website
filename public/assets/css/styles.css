@@ -309,12 +309,21 @@ svg { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColo
 .post-image { margin: 10px 0 12px; max-width: 420px; }
 .card-hero { margin-top: 10px; }
 .img-thumb {
+  position: relative;
   display: block; width: 100%; aspect-ratio: 1 / 1; padding: 0; border: 0; cursor: zoom-in;
   border-radius: var(--radius); overflow: hidden; background: var(--background);
   box-shadow: inset 0 0 0 1px var(--outline);
 }
 .img-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .25s ease; }
 .img-thumb:hover img { transform: scale(1.03); }
+.img-thumb-icon {
+  position: absolute; right: 10px; bottom: 10px; width: 36px; height: 36px; border-radius: 999px;
+  display: grid; place-items: center; pointer-events: none;
+  background: rgba(20, 14, 18, 0.62); color: #FFF;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); transition: transform .2s ease, background .2s ease;
+}
+.img-thumb-icon svg { width: 18px; height: 18px; }
+.img-thumb:hover .img-thumb-icon, .img-thumb:focus-visible .img-thumb-icon { transform: scale(1.1); background: var(--primary); }
 .img-thumb:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
 
 .lightbox {
